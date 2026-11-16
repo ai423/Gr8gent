@@ -60,7 +60,10 @@ export type LedgerEventType =
   | "action_approved"
   | "action_rejected"
   | "action_executed"
-  | "action_failed";
+  | "action_failed"
+  | "run_started"
+  | "run_finished"
+  | "llm_call";
 
 export interface LedgerEvent {
   seq: number;
@@ -72,4 +75,5 @@ export interface LedgerEvent {
   reason: string;
   detail?: string;
   cost?: Money;
+  tokens?: { input: number; output: number };
 }

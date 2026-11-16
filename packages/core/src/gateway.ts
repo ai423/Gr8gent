@@ -4,6 +4,11 @@ import type { ActionRequest, Agent, Decision, Mission, Money, ToolSpec } from ".
 
 export type Executor = (req: ActionRequest) => Promise<unknown>;
 
+/** Looked up on every request, so tools registered later are seen. A Map satisfies this. */
+export interface ToolLookup {
+  get(name: string): ToolSpec | undefined;
+}
+
 export type GatewayResult =
   | { status: "executed"; result: unknown }
   | { status: "pending_approval"; approvalId: number; why: string }
@@ -23,7 +28,7 @@ export class ActionGateway {
 
   constructor(
     private ledger: Ledger,
-    private tools: Map<string, ToolSpec>,
+    private tools: ToolLookup,
     private execute: Executor,
   ) {}
 
