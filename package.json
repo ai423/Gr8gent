@@ -1,0 +1,9 @@
+{
+  "name": "gr8gent",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "test": "npm test -w @gr8gent/core",
+    "typecheck": "npm run typecheck -w @gr8gent/core"
+  }
+}
