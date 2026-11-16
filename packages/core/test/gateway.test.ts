@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ActionGateway, Ledger, type Agent, type Mission, type ToolSpec } from "../src/index.js";
+import { ActionGateway, InMemoryLedger, type Agent, type Mission, type ToolSpec } from "../src/index.js";
 
 const ils = (amount: number) => ({ amount, currency: "ILS" });
 const tools = new Map<string, ToolSpec>([
@@ -17,7 +17,7 @@ const mission = (over: Partial<Mission> = {}): Mission => ({
   hopLimit: 5, frozen: false, ...over,
 });
 const setup = () => {
-  const ledger = new Ledger();
+  const ledger = new InMemoryLedger();
   const calls: string[] = [];
   const gw = new ActionGateway(ledger, tools, async (r) => { calls.push(r.tool); return "ok"; });
   return { ledger, calls, gw };
@@ -56,7 +56,7 @@ describe("ActionGateway", () => {
     const { gw } = setup();
     const m = mission();
     expect((await gw.request(m, agent, req("ads.boost", { cost: ils(40_00) }))).status).toBe("executed");
-    expect(gw.spentFor(m).amount).toBe(40_00);
+    expect((await gw.spentFor(m)).amount).toBe(40_00);
   });
 
   it("spend above threshold needs approval", async () => {
@@ -72,7 +72,7 @@ describe("ActionGateway", () => {
     await gw.request(m, agent, req("ads.boost", { cost: ils(40_00) }));
     const r = await gw.request(m, agent, req("ads.boost", { cost: ils(40_00) }));
     expect(r.status).toBe("denied");
-    expect(gw.spentFor(m).amount).toBe(80_00);
+    expect((await gw.spentFor(m)).amount).toBe(80_00);
   });
 
   it("irreversible always needs approval, even at level 3", async () => {
@@ -100,12 +100,12 @@ describe("ActionGateway", () => {
   });
 
   it("failed executions are logged and do not count as spend", async () => {
-    const ledger = new Ledger();
+    const ledger = new InMemoryLedger();
     const gw = new ActionGateway(ledger, tools, async () => { throw new Error("boom"); });
     const m = mission();
     const r = await gw.request(m, agent, req("ads.boost", { cost: ils(10_00) }));
     expect(r.status).toBe("failed");
-    expect(gw.spentFor(m).amount).toBe(0);
+    expect((await gw.spentFor(m)).amount).toBe(0);
     expect(ledger.all().at(-1)?.type).toBe("action_failed");
   });
 

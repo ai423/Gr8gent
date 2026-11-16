@@ -53,7 +53,7 @@ describe("runAgent", () => {
     const { deps, gateway } = setup(tb, llm, mission({ approvalThreshold: ils(50_00) }));
     const r = await runAgent(deps, { agent: agent("Rom", ["ads.boost"]), task: "boost" });
     expect(r.pendingApprovals).toHaveLength(1); // 60.00 is above the 50.00 threshold
-    expect(gateway.spentFor(deps.mission).amount).toBe(0);
+    expect((await gateway.spentFor(deps.mission)).amount).toBe(0);
   });
 
   it("denies tools outside scope and unknown tools, reporting an error to the model", async () => {

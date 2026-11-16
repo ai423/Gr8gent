@@ -7,12 +7,17 @@ export interface ChannelMessage {
   body: string;
 }
 
+/** Where channel messages go. In-memory for tests, Postgres for real use. */
+export interface ChannelSink {
+  post(m: Omit<ChannelMessage, "seq" | "at">): Promise<ChannelMessage>;
+}
+
 /** The shared conversation of a mission, visible to the user. */
-export class Channel {
+export class Channel implements ChannelSink {
   private messages: ChannelMessage[] = [];
   private listeners: ((m: ChannelMessage) => void)[] = [];
 
-  post(m: Omit<ChannelMessage, "seq" | "at">): ChannelMessage {
+  async post(m: Omit<ChannelMessage, "seq" | "at">): Promise<ChannelMessage> {
     const msg = { ...m, seq: this.messages.length + 1, at: new Date().toISOString() };
     this.messages.push(msg);
     for (const l of this.listeners) l(msg);

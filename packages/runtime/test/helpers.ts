@@ -1,5 +1,5 @@
 import {
-  ActionGateway, Ledger, type Mission, type Money,
+  ActionGateway, InMemoryLedger, type Mission, type Money,
 } from "@8gent/core";
 import {
   Channel, Toolbox, type AgentConfig, type LlmClient, type LlmRequest,
@@ -41,7 +41,7 @@ export class ScriptedLlm implements LlmClient {
 }
 
 export function setup(toolbox: Toolbox, llm: LlmClient, m: Mission = mission()) {
-  const ledger = new Ledger();
+  const ledger = new InMemoryLedger();
   const gateway = new ActionGateway(ledger, toolbox.specs, toolbox.executor);
   const channel = new Channel();
   const deps: RunDeps = { mission: m, gateway, ledger, toolbox, llm, channel };

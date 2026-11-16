@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": ["packages/*"],
   "scripts": {
-    "test": "npm test -w @8gent/core -w @8gent/runtime",
-    "typecheck": "npm run typecheck -w @8gent/core -w @8gent/runtime"
+    "test": "npm test -w @8gent/core -w @8gent/runtime -w @8gent/db",
+    "typecheck": "npm run typecheck -w @8gent/core -w @8gent/runtime -w @8gent/db"
   }
 }

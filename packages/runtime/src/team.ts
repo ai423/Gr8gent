@@ -27,7 +27,7 @@ export function delegateTool(deps: RunDeps, workers: AgentConfig[]): ToolDef {
     run: async (args, req) => {
       const worker = workers.find((w) => w.name === args.worker);
       if (!worker || typeof args.task !== "string") throw new Error("unknown worker or missing task");
-      deps.channel.post({
+      await deps.channel.post({
         missionId: deps.mission.id, from: "manager", to: worker.name, body: args.task,
       });
       const r = await runAgent(deps, { agent: worker, task: args.task, hop: (req.hop ?? 0) + 1 });

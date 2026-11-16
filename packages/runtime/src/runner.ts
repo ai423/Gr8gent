@@ -1,5 +1,5 @@
-import type { ActionGateway, Agent, Ledger, Mission } from "@8gent/core";
-import type { Channel } from "./channel.js";
+import type { ActionGateway, Agent, LedgerStore, Mission } from "@8gent/core";
+import type { ChannelSink } from "./channel.js";
 import type { LlmClient, ToolCall, Turn } from "./llm.js";
 import type { Toolbox } from "./toolbox.js";
 
@@ -12,10 +12,10 @@ export interface AgentConfig extends Agent {
 export interface RunDeps {
   mission: Mission;
   gateway: ActionGateway;
-  ledger: Ledger;
+  ledger: LedgerStore;
   toolbox: Toolbox;
   llm: LlmClient;
-  channel: Channel;
+  channel: ChannelSink;
 }
 
 export interface RunOptions {
@@ -63,7 +63,7 @@ export async function runAgent(deps: RunDeps, opts: RunOptions): Promise<RunResu
   let status: RunStatus = "turn_limit";
   let used = 0;
 
-  ledger.append({ ...base, type: "run_started", reason: task.slice(0, 200) });
+  await ledger.append({ ...base, type: "run_started", reason: task.slice(0, 200) });
 
   for (; used < maxTurns; ) {
     if (deps.mission.frozen || agent.paused) { status = "stopped"; break; }
@@ -79,7 +79,7 @@ export async function runAgent(deps: RunDeps, opts: RunOptions): Promise<RunResu
     used++;
     tokens.input += res.usage.input;
     tokens.output += res.usage.output;
-    ledger.append({ ...base, type: "llm_call", reason: agent.model, tokens: res.usage });
+    await ledger.append({ ...base, type: "llm_call", reason: agent.model, tokens: res.usage });
 
     if (res.stop === "refusal") { status = "refused"; finalText = res.text; break; }
     if (res.stop === "max_tokens") { status = "truncated"; finalText = res.text; break; }
@@ -104,9 +104,9 @@ export async function runAgent(deps: RunDeps, opts: RunOptions): Promise<RunResu
     }
   }
 
-  ledger.append({ ...base, type: "run_finished", reason: status, tokens });
+  await ledger.append({ ...base, type: "run_finished", reason: status, tokens });
   if (finalText) {
-    channel.post({ missionId: mission.id, from: agent.name, body: finalText });
+    await channel.post({ missionId: mission.id, from: agent.name, body: finalText });
   }
   return { status, finalText, pendingApprovals, turns: used, tokens };
 

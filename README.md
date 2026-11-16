@@ -7,7 +7,8 @@
 
 - **M0 (ליבה):** `packages/core`: טיפוסים, מנוע Policy, Action Gateway ו-Ledger.
 - **M1 (Runtime, בעבודה):** `packages/runtime`: לולאת סוכן משלנו מעל Claude, Toolbox, ערוץ משותף, ומנהל שמאציל לעובדים. כל קריאה לכלי עוברת דרך ה-Gateway.
-  עדיין חסר: שמירה ב-DB (הכול בזיכרון), ובדיקה חיה מול ה-API.
+- **שמירה (Postgres):** `packages/db`: מיגרציות, Ledger שאי אפשר לשנות (נאכף ב-DB), מצב Gateway עמיד (הוצאה, אישורים ממתינים, Kill switch), וערוץ. נבדק על Postgres אמיתי (PGlite).
+  עדיין חסר: בדיקה חיה מול ה-API של Claude, ושמירת הגדרות סוכנים.
 
 ```bash
 npm install
